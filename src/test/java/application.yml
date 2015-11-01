@@ -1,0 +1,13 @@
+spring:
+  data:
+    mongodb:
+      database: UserRegistrationDB
+      host: localhost
+      port: 27017
+
+temotec:
+  annotations:
+    security:
+      collection: User
+      role-path: roles
+      username-path: username
