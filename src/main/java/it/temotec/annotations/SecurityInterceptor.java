@@ -2,6 +2,7 @@ package it.temotec.annotations;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.in;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -13,7 +14,6 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -40,8 +40,10 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
 		String connectedUser = request.getUserPrincipal() == null ? null : request.getUserPrincipal().getName();
 		
 		// if no user is logged in, then exit
-		if (connectedUser == null)
+		if (connectedUser == null){
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 			return false;
+		}
 		
 		// cast the annotated spring handler method
 		HandlerMethod handlerMethod = (HandlerMethod) handler;
@@ -52,11 +54,15 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
 			Annotation annotation = method.getAnnotation(Role.class);
 			Role casRole = (Role) annotation;
 			
-			System.out.printf("Access :%s\n", casRole.access());
+			//System.out.printf("Access :%s\n", casRole.access());
+			String[] roles = casRole.access();
+			
+			System.out.println("Prova:" + roles.length);
 			
 			MongoDatabase db = mongoClient.getDatabase(mongoProperties.getDatabase());
 	        MongoCollection<Document> coll = db.getCollection(roleProperties.getCollection(), Document.class);
-			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), eq(roleProperties.getRolePath(), casRole.access()));
+			//Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), eq(roleProperties.getRolePath(), casRole.access()));
+			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), casRole.access()));
 			
 			long found = coll.count(filter);
 			

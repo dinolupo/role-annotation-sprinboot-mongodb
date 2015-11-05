@@ -19,7 +19,11 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'spring-boot'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
+group = 'com.github.pasqualej'
+version = '0.0.1'
 
 jar {
 	baseName = 'temotec-annotations'
@@ -41,6 +45,9 @@ repositories {
 //		url "http://172.17.1.201:8080/repository/internal"
 //	}
 //}
+configurations{
+	deployerJars
+}
 
 // exclude tomcat as application server from spring boot
 configurations {
@@ -62,4 +69,27 @@ dependencies {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.6'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+        repository(url: "http://172.17.1.201:8080/repository/internal") {
+            authentication(userName: "archiva", password: "deploy123")
+            pom.groupId='TEMOTEC'
+            pom.version='0.4'
+            pom.artifactId='annotations'
+            
+        }
+    }
 }
