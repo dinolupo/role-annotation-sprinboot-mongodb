@@ -55,14 +55,14 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
 			Role casRole = (Role) annotation;
 			
 			//System.out.printf("Access :%s\n", casRole.access());
-			String[] roles = casRole.access();
+			String[] roles = casRole.value();
 			
-			System.out.println("Prova:" + roles.length);
+			System.out.println("Number of input role:" + roles.length);
 			
 			MongoDatabase db = mongoClient.getDatabase(mongoProperties.getDatabase());
 	        MongoCollection<Document> coll = db.getCollection(roleProperties.getCollection(), Document.class);
 			//Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), eq(roleProperties.getRolePath(), casRole.access()));
-			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), casRole.access()));
+			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), casRole.value()));
 			
 			long found = coll.count(filter);
 			

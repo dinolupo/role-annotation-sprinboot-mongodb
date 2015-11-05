@@ -10,6 +10,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+
 /**
  * @author dino lupo
  *
@@ -23,5 +25,5 @@ import java.lang.annotation.RetentionPolicy;
 public @interface Role {
 	//String access() default "guest";
 	
-	String[] access() default {"guest"};
+	String[] value() default {"guest"};
 }

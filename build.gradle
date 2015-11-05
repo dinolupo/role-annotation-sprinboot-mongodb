@@ -87,7 +87,7 @@ uploadArchives {
         repository(url: "http://172.17.1.201:8080/repository/internal") {
             authentication(userName: "archiva", password: "deploy123")
             pom.groupId='TEMOTEC'
-            pom.version='0.4'
+            pom.version='0.6'
             pom.artifactId='annotations'
             
         }
