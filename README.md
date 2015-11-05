@@ -84,6 +84,7 @@ public class Application extends WebMvcConfigurerAdapter {
 }
 ```
 
-SAMPLE for using this annotation:
+**SAMPLE** for using this **annotation**:
+
 	@Role(access={"read-user","write-user"})
     @Role(access="read-user")
