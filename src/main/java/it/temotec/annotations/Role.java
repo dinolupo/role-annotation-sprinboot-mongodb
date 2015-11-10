@@ -22,8 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface Role {
-	//String access() default "guest";
-	
+public @interface Role {	
 	String[] value() default {"guest"};
 }

@@ -61,7 +61,6 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
 			
 			MongoDatabase db = mongoClient.getDatabase(mongoProperties.getDatabase());
 	        MongoCollection<Document> coll = db.getCollection(roleProperties.getCollection(), Document.class);
-			//Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), eq(roleProperties.getRolePath(), casRole.access()));
 			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), casRole.value()));
 			
 			long found = coll.count(filter);

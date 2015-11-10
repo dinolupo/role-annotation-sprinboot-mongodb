@@ -1,4 +1,5 @@
 buildscript {
+
 	repositories {
 		jcenter()
 		maven { url "http://repo.spring.io/snapshot" }
@@ -22,7 +23,7 @@ apply plugin: 'spring-boot'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-group = 'com.github.pasqualej'
+group = 'com.github.dinolupo'
 version = '0.0.1'
 
 jar {
@@ -33,8 +34,6 @@ jar {
 // In this section you declare where to find the dependencies of your project
 
 repositories {
-    // Use 'jcenter' for resolving your dependencies.
-    // You can declare any Maven/Ivy/file repository here.
     jcenter()
 	maven { url "http://repo.spring.io/snapshot" }
 	maven { url "http://repo.spring.io/milestone" }
@@ -65,6 +64,21 @@ dependencies {
 	compile 'org.springframework.boot:spring-boot-starter-jetty'
 	
 	testCompile 'org.springframework.boot:spring-boot-starter-test'
+	
+	// test library for testing spring with spock
+	testCompile 'org.spockframework:spock-spring'
+	
+	// groovy testing with spock
+	testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+	testCompile 'cglib:cglib-nodep:3.1'
+	testCompile 'org.objenesis:objenesis:2.1'
+	testCompile 'org.codehaus.groovy:groovy-all:2.4.0'
+	
+	// mongodb testing database
+	testCompile group: "de.flapdoodle.embed", name: "de.flapdoodle.embed.mongo", version: "1.50.0"
+
+	// to use mocking of httpsession, security, etc.
+	testCompile 'org.springframework.security:spring-security-core'	
 }
 
 task wrapper(type: Wrapper) {
@@ -81,15 +95,16 @@ task sourcesJar(type: Jar) {
     classifier = 'sources'
 }
 
-uploadArchives {
-    repositories.mavenDeployer {
-        configuration = configurations.deployerJars
-        repository(url: "http://172.17.1.201:8080/repository/internal") {
-            authentication(userName: "archiva", password: "deploy123")
-            pom.groupId='TEMOTEC'
-            pom.version='0.6'
-            pom.artifactId='annotations'
-            
-        }
-    }
-}
+// private archive in my company
+//uploadArchives {
+//    repositories.mavenDeployer {
+//        configuration = configurations.deployerJars
+//        repository(url: "http://172.17.1.201:8080/repository/internal") {
+//            authentication(userName: "archiva", password: "deploy123")
+//            pom.groupId='TEMOTEC'
+//            pom.version='0.6'
+//            pom.artifactId='annotations'
+//            
+//        }
+//    }
+//}
