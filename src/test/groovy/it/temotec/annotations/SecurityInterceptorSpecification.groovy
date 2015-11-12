@@ -82,7 +82,7 @@ class SecurityInterceptorSpecification extends Specification {
 	SecurityInterceptor securityInterceptor
 
 	@Shared
-	int PORT = 27017
+	int PORT = 12345
 
 	@Shared
 	private MongodStarter starter = MongodStarter.getDefaultInstance()

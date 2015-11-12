@@ -3,7 +3,7 @@ spring:
     mongodb:
       database: UserRegistrationDB
       host: localhost
-      port: 27017
+      port: 12345
   
 temotec:
   annotations:

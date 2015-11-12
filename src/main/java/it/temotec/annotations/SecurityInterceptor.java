@@ -24,7 +24,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 @Component
-@EnableConfigurationProperties({RoleConfigurationProperties.class, MongoProperties.class, MongoClient.class})
+@EnableConfigurationProperties({RoleConfigurationProperties.class})
 public class SecurityInterceptor extends HandlerInterceptorAdapter {
 	
 	@Autowired
