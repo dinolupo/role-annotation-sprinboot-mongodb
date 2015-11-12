@@ -55,7 +55,7 @@ import de.flapdoodle.embed.mongo.Command
 import de.flapdoodle.embed.mongo.distribution.Version
 
 @TestPropertySource('classpath:application.yml')
-@ContextConfiguration(loader = SpringApplicationContextLoader.class, classes=[MongoProperties.class, RoleConfiguration.class])
+@ContextConfiguration(loader = SpringApplicationContextLoader.class, classes=[RoleConfiguration.class])
 class SecurityInterceptorSpecification extends Specification {
 
 	public static class MockPrincipal implements Principal {
