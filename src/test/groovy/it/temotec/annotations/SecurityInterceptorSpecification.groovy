@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import spock.lang.Shared
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import org.bson.Document;
 import org.junit.runner.RunWith
@@ -125,8 +126,8 @@ class SecurityInterceptorSpecification extends Specification {
 
 	}
 
-
-	def 'spec 1 checking SecurityInterceptor.preHandle on method annotated with @Role(\'write\')'() {
+	@Unroll
+	def 'spec 1 preHandle must return #boolValue and HTTP Status #httpStatus when method is annotated with @Role(\'write\') and principalName=#principalName, dbUsername=#dbUsername, dbRoles=#dbRoles'() {
 
 		given:
 		MongoDatabase db = mongoClient.getDatabase('UserRegistrationDB')
@@ -176,8 +177,8 @@ class SecurityInterceptorSpecification extends Specification {
 
 	}
 
-
-	def 'spec 2 checking SecurityInterceptor.preHandle on method annotated with array of roles: @Role([\'write\',[\'read\',[\'public\'])'() {
+	@Unroll
+	def 'spec 2 preHandle must return #boolValue and HTTP Status #httpStatus when method is annotated with array of roles: @Role([\'write\',[\'read\',[\'public\']) and principalName=#principalName, dbUsername=#dbUsername, dbRoles=#dbRoles'() {
 
 		given:
 		MongoDatabase db = mongoClient.getDatabase('UserRegistrationDB')
@@ -257,9 +258,9 @@ class SecurityInterceptorSpecification extends Specification {
 
 		then:
 		retValue == true
-		
+
 	}
-	
+
 	def 'spec 4 checking SecurityInterceptor.preHandle on method annotated with no role annotation and no user principal logged'() {
 		given:
 		// Mock HttpServletRequest
@@ -275,7 +276,7 @@ class SecurityInterceptorSpecification extends Specification {
 		when:
 		request.setUserPrincipal(null)
 
-		// call the handle passing an anonymous object with the annotated method
+		// call the handle passing an anonymous object with the method not annotated
 		boolean retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
 				new Object() {
 					void test() {}
@@ -284,6 +285,6 @@ class SecurityInterceptorSpecification extends Specification {
 
 		then:
 		retValue == false
-		
+
 	}
 }
