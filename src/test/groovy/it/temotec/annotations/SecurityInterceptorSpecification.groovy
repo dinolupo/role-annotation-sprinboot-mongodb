@@ -1,7 +1,3 @@
-//def setup() {}          // run before every feature method
-//def cleanup() {}        // run after every feature method
-//def setupSpec() {}     // run before the first feature method
-//def cleanupSpec() {}   // run after the last feature method
 package it.temotec.annotations
 
 import java.security.Principal
@@ -30,9 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.http.*
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
-//import org.springframework.security.*
-//import org.springframework.security.role.*
-//import static org.springframework.
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -61,10 +54,6 @@ import de.flapdoodle.embed.process.extract.UserTempNaming
 import de.flapdoodle.embed.mongo.Command
 import de.flapdoodle.embed.mongo.distribution.Version
 
-
-
-
-//@RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource('classpath:application.yml')
 @ContextConfiguration(loader = SpringApplicationContextLoader.class, classes=[MongoProperties.class, RoleConfiguration.class])
 class SecurityInterceptorSpecification extends Specification {
@@ -76,18 +65,18 @@ class SecurityInterceptorSpecification extends Specification {
 			this.name = name;
 			this.authorities = authorities;
 		}
-		
+
 		@Override
 		public String getName() {
 			return name;
 		}
-		
+
 		public Collection<? extends GrantedAuthority> getAuthorities() {
 			return authorities;
 		}
 	}
-	
-	
+
+
 	@Autowired
 	SecurityInterceptor securityInterceptor
 
@@ -127,98 +116,174 @@ class SecurityInterceptorSpecification extends Specification {
 
 	}
 
-	def 'test spec 1 autowired of SecurityInterceptor works correctly'() {
+	def 'spec 0 autowired of SecurityInterceptor works correctly'() {
 		given:
-		
+
 		expect:
 		securityInterceptor != null
 		mongoClient != null
 
 	}
 
-//	public MockHttpSession makeAuthSession(String username, String... roles) {
-//		if (StringUtils.isEmpty(username)) {
-//			username = "azeckoski";
-//		}
-//		MockHttpSession session = new MockHttpSession();
-//		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
-//		Collection<GrantedAuthority> authorities = new HashSet<>();
-//		if (roles != null && roles.length > 0) {
-//			for (String role : roles) {
-//				authorities.add(new SimpleGrantedAuthority(role));
-//			}
-//		}
-//		//Authentication authToken = new UsernamePasswordAuthenticationToken("azeckoski", "password", authorities); // causes a NPE when it tries to access the Principal
-//		Principal principal = new MockPrincipal(username, authorities,
-//				'key', 'signature', 'HMAC-SHA-1', 'signaturebase', 'token');
-//		Authentication authToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
-//		SecurityContextHolder.getContext().setAuthentication(authToken);
-//		return session;
-//	}
-		
-	def 'test spec 0 security interceptor verify the correct Role Annotated method'() {
+
+	def 'spec 1 checking SecurityInterceptor.preHandle on method annotated with @Role(\'write\')'() {
 
 		given:
 		MongoDatabase db = mongoClient.getDatabase('UserRegistrationDB')
 		MongoCollection<Document> coll = db.getCollection('User', Document.class)
 		coll.drop()
-		
 		Document user = new Document('_id', 1)
-							.append('username', 'admin')
-							.append('hashedPassword', '$2a$10$Jdl9SQ6IrFalG0YAhVNmg.k5dy5wbQUMXYoix738MQQaC.TCnIUUK')
-							.append('salt', 'ULCvfdr9x1QbN55HELSci3QEB2a7nMSS6NPClxW')
-							.append('email', 'admin@temotec.it')
-							.append('firstname', 'Obi')
-							.append('lastname', 'One Kenobi')
-							.append('roles', ['write','read', 'guest', 'admin' ])							 
-		
+				.append('username', dbUsername)
+				.append('roles', dbRoles)
 		coll.insertOne(user)
-		
-		when:
-		Document read = coll.find(new Document('_id', 1)).first()
-		
+
 		// Mock HttpServletRequest
 		MockHttpServletRequest request = new MockHttpServletRequest()
-		request.addHeader('Authorization', 'Some Token')
 		request.addHeader('Accept', 'application/json')
 		request.method = 'POST'
 		request.requestURI = '/some/url'
 		request.contentType = MediaType.APPLICATION_JSON
-		Principal principal = new MockPrincipal('carciofo', new HashSet<>(), 'key', 'signature', 'HMAC-SHA-1', 'signaturebase', 'token')
-		request.setUserPrincipal(principal)
-		
+
 		// Mock HttpServletResponse
 		MockHttpServletResponse response = new MockHttpServletResponse()
-		
-		def retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
-																				new Object() {
-																					@Role('write')
-																					void test() {}
-																				}, 'test')
-														)
-		then:
-		read.getInteger('_id') == 1
-		read.getString('lastname') == 'One Kenobi'
-		
-		retValue == false
-		response.getStatus() == HttpServletResponse.SC_UNAUTHORIZED
-
-	}
- 
-	//@Ignore('demo method')
-	def 'Test Specification'() {
-		given:
-		def a = 0
 
 		when:
-		a = a + 1
+		// set the user principal in the mocked request
+		Principal principal = new MockPrincipal(principalName, new HashSet<>(), 'key', 'signature', 'HMAC-SHA-1', 'signaturebase', 'token')
+		request.setUserPrincipal(principal)
+
+		// call the handle passing an anonymous object with the annotated method
+		boolean retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
+				new Object() {
+					@Role('write')
+					void test() {}
+				}, 'test')
+				)
 
 		then:
-		a==1
-		a!=0
-		a>0
-		println 'test specification complete'
+		retValue == boolValue
+		response.getStatus() == httpStatus
+
+		where:
+		principalName	|	dbUsername	|	dbRoles				|	boolValue	|	httpStatus
+		'admin'			|	'admin'		|	['write','read']	|	true		|	HttpServletResponse.SC_OK
+		'user'			|	'user'		|	['read','write']	|	true		|	HttpServletResponse.SC_OK
+		'one'			|	'one'		|	['write']			|	true		|	HttpServletResponse.SC_OK
+		'guest'			|	'guest'		|	['read']			|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'guest'			|	'guest'		|	[]					|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'guest'			|	'admin'		|	['write']			|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'admin'			|	'guest'		|	['write']			|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+
 	}
 
 
+	def 'spec 2 checking SecurityInterceptor.preHandle on method annotated with array of roles: @Role([\'write\',[\'read\',[\'public\'])'() {
+
+		given:
+		MongoDatabase db = mongoClient.getDatabase('UserRegistrationDB')
+		MongoCollection<Document> coll = db.getCollection('User', Document.class)
+		coll.drop()
+		Document user = new Document('_id', 1)
+				.append('username', dbUsername)
+				.append('roles', dbRoles)
+		coll.insertOne(user)
+
+		// Mock HttpServletRequest
+		MockHttpServletRequest request = new MockHttpServletRequest()
+		request.addHeader('Accept', 'application/json')
+		request.method = 'POST'
+		request.requestURI = '/some/url'
+		request.contentType = MediaType.APPLICATION_JSON
+
+		// Mock HttpServletResponse
+		MockHttpServletResponse response = new MockHttpServletResponse()
+
+		when:
+		// set the user principal in the mocked request
+		Principal principal = new MockPrincipal(principalName, new HashSet<>(), 'key', 'signature', 'HMAC-SHA-1', 'signaturebase', 'token')
+		request.setUserPrincipal(principal)
+
+		// call the handle passing an anonymous object with the annotated method
+		boolean retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
+				new Object() {
+					@Role(['write','read', 'public' ])
+					void test() {}
+				}, 'test')
+				)
+
+		then:
+		retValue == boolValue
+		response.getStatus() == httpStatus
+
+		where:
+		principalName	|	dbUsername	|	dbRoles				|	boolValue	|	httpStatus
+		'admin'			|	'admin'		|	['write']			|	true		|	HttpServletResponse.SC_OK
+		'admin'			|	'admin'		|	['read']			|	true		|	HttpServletResponse.SC_OK
+		'admin'			|	'admin'		|	['public']			|	true		|	HttpServletResponse.SC_OK
+		'user2'			|	'user2'		|	['read', 'write']	|	true		|	HttpServletResponse.SC_OK
+		'user2'			|	'user2'		|	['other', 'write']	|	true		|	HttpServletResponse.SC_OK
+		'user2'			|	'user2'		|	['other', 'public']	|	true		|	HttpServletResponse.SC_OK
+		'guest'			|	'guest'		|	['notpresent']		|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'guest'			|	'guest'		|	['no1','no2']		|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'guest'			|	'guest'		|	[]					|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'guest'			|	'admin'		|	['write']			|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+		'admin'			|	'guest'		|	['write']			|	false		|	HttpServletResponse.SC_UNAUTHORIZED
+
+	}
+
+	def 'spec 3 checking SecurityInterceptor.preHandle on method annotated with no role annotation'() {
+		given:
+		// Mock HttpServletRequest
+		MockHttpServletRequest request = new MockHttpServletRequest()
+		request.addHeader('Accept', 'application/json')
+		request.method = 'POST'
+		request.requestURI = '/some/url'
+		request.contentType = MediaType.APPLICATION_JSON
+
+		// Mock HttpServletResponse
+		MockHttpServletResponse response = new MockHttpServletResponse()
+
+		when:
+		// set the user principal in the mocked request
+		Principal principal = new MockPrincipal('test', new HashSet<>(), 'key', 'signature', 'HMAC-SHA-1', 'signaturebase', 'token')
+		request.setUserPrincipal(principal)
+
+		// call the handle passing an anonymous object with the annotated method
+		boolean retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
+				new Object() {
+					void test() {}
+				}, 'test')
+				)
+
+		then:
+		retValue == true
+		
+	}
+	
+	def 'spec 4 checking SecurityInterceptor.preHandle on method annotated with no role annotation and no user principal logged'() {
+		given:
+		// Mock HttpServletRequest
+		MockHttpServletRequest request = new MockHttpServletRequest()
+		request.addHeader('Accept', 'application/json')
+		request.method = 'POST'
+		request.requestURI = '/some/url'
+		request.contentType = MediaType.APPLICATION_JSON
+
+		// Mock HttpServletResponse
+		MockHttpServletResponse response = new MockHttpServletResponse()
+
+		when:
+		request.setUserPrincipal(null)
+
+		// call the handle passing an anonymous object with the annotated method
+		boolean retValue = securityInterceptor.preHandle(request, response, new HandlerMethod (
+				new Object() {
+					void test() {}
+				}, 'test')
+				)
+
+		then:
+		retValue == false
+		
+	}
 }
