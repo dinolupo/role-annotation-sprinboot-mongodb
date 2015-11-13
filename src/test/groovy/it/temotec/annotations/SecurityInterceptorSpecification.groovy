@@ -1,59 +1,33 @@
 package it.temotec.annotations
 
 import java.security.Principal
+import javax.servlet.http.HttpServletResponse
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.web.method.HandlerMethod
-
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationContextLoader
-import org.springframework.boot.test.IntegrationTest
-import org.springframework.context.annotation.ComponentScan
-import org.springframework.context.annotation.Primary
+import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockHttpSession
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.stereotype.Service
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.http.*
-import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import org.bson.Document;
-import org.junit.runner.RunWith
-
 import com.mongodb.MongoClient
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase
-import de.flapdoodle.embed.mongo.MongoImportExecutable
-import de.flapdoodle.embed.mongo.MongoImportProcess
 import de.flapdoodle.embed.mongo.MongodExecutable
 import de.flapdoodle.embed.mongo.MongodProcess
 import de.flapdoodle.embed.mongo.MongodStarter
-import de.flapdoodle.embed.mongo.MongoImportStarter
-
-import de.flapdoodle.embed.mongo.config.DownloadConfigBuilder
-import de.flapdoodle.embed.mongo.config.ExtractedArtifactStoreBuilder
-import de.flapdoodle.embed.mongo.config.IMongoImportConfig
-import de.flapdoodle.embed.mongo.config.MongoImportConfigBuilder
 import de.flapdoodle.embed.mongo.config.MongodConfigBuilder
 import de.flapdoodle.embed.mongo.config.Net
-import de.flapdoodle.embed.mongo.config.RuntimeConfigBuilder
-import de.flapdoodle.embed.process.extract.UserTempNaming
-import de.flapdoodle.embed.mongo.Command
 import de.flapdoodle.embed.mongo.distribution.Version
+
 
 @TestPropertySource('classpath:application.yml')
 @ContextConfiguration(loader = SpringApplicationContextLoader.class, classes=[RoleConfiguration.class])
@@ -66,7 +40,7 @@ class SecurityInterceptorSpecification extends Specification {
 			this.name = name;
 			this.authorities = authorities;
 		}
-
+		
 		@Override
 		public String getName() {
 			return name;
@@ -137,7 +111,7 @@ class SecurityInterceptorSpecification extends Specification {
 				.append('username', dbUsername)
 				.append('roles', dbRoles)
 		coll.insertOne(user)
-
+		
 		// Mock HttpServletRequest
 		MockHttpServletRequest request = new MockHttpServletRequest()
 		request.addHeader('Accept', 'application/json')

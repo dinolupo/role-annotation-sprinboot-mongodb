@@ -1,9 +1,12 @@
+# As stated in https://github.com/spring-projects/spring-boot/issues/4051 and reported in spring documentation at
+# http://docs.spring.io/spring-boot/docs/current-SNAPSHOT/reference/htmlsingle/#boot-features-mongod
+# spring.data.mongodb.host and spring.data.mongodb.port are not supported if you’re using the Mongo 3.0 Java driver.
+
 spring:
   data:
     mongodb:
       database: UserRegistrationDB
-      host: localhost
-      port: 12345
+      uri: mongodb://localhost:12345 
   
 temotec:
   annotations:

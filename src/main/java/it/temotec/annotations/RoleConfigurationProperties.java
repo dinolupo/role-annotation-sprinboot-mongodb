@@ -1,6 +1,5 @@
 package it.temotec.annotations;
 
-import javax.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "temotec.annotations.security", ignoreUnknownFields = false)
@@ -29,12 +28,12 @@ public class RoleConfigurationProperties {
 		this.rolePath = rolePath;
 	}
 
-	@NotNull
+
 	String collection;
 	
-	@NotNull
+
 	String usernamePath;
 	
-	@NotNull
+
 	String rolePath;
 }
