@@ -1,4 +1,4 @@
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

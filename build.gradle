@@ -1,37 +1,69 @@
 buildscript {
 
+	def propdepsVersion = '0.0.7'
+
 	repositories {
 		jcenter()
-		maven { url "http://repo.spring.io/snapshot" }
-		maven { url "http://repo.spring.io/milestone" }
+		maven { url 'http://repo.spring.io/plugins-release' }
 	}
-	
+
 	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:1.3.0.RC1")
+		classpath "org.springframework.build.gradle:propdeps-plugin:" + propdepsVersion
+		classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.3.2'
 	}
 }
 
-// Apply the java plugin to add support for Java
 apply plugin: 'java'
 apply plugin: 'groovy'
-apply plugin: 'spring-boot'
-apply plugin: 'maven'
+//apply plugin: 'maven'
+apply plugin: 'propdeps'
 apply plugin: 'signing'
+apply plugin: 'pl.allegro.tech.build.axion-release'
 
-group = 'com.github.dinolupo'
-version = '1.0'
+//properties for deploying; DON'T SET HERE, SET IN YOUR PERSONAL FILE! (~/.gradle/gradle.properties)
+//bintrayUsername=
+//bintrayAPIKey=
+
+//signing.keyId=
+//signing.password=
+//signing.secretKeyRingFile=
+//end properties for deploying
+
+// ------------------	Gradle Release Plugin ------------------
+scmVersion {
+	tag {
+		prefix = 'my-project-name'
+	}
+}
+
+project.version = scmVersion.version
+// -------------------------------------------------------------
+
+ext {
+	group = 'com.github.dinolupo.annotations'
+	version = '1.2.0-GA-SNAPSHOT'
+	servletApiVersion = '3.1.0'
+	springWebMvc = '4.2.3.RELEASE'
+	springBootVersion = '1.3.0.RELEASE'
+	springSecurityCore = '4.0.3.RELEASE'
+}
+
+configure(allprojects) {
+	apply plugin: 'propdeps'
+	apply plugin: 'propdeps-maven'
+	apply plugin: 'propdeps-idea'
+	apply plugin: 'propdeps-eclipse'
+}
 
 jar {
-	baseName = 'temotec-annotations'
-	version  = '0.1.SNAPSHOT' 
+	baseName = 'com.github.dinolupo.role-annotation-springboot-mongodb'
+	version  = version
 }
 
 // In this section you declare where to find the dependencies of your project
 
 repositories {
-    jcenter()
-	maven { url "http://repo.spring.io/snapshot" }
-	maven { url "http://repo.spring.io/milestone" }
+	jcenter()
 }
 
 
@@ -39,52 +71,120 @@ configurations{
 	deployerJars
 }
 
-// exclude tomcat as application server from spring boot
-configurations {
-	compile.exclude module: "spring-boot-starter-tomcat"
-}
-
 // In this section you declare the dependencies for your production and test code
 dependencies {
-  
+
+	compile "javax.validation:validation-api:1.1.0.Final"
+
 	// mongodb drivers
 	compile 'org.mongodb:mongo-java-driver:3.1.0'
-				
-	compile 'org.springframework.boot:spring-boot-configuration-processor'
-	
-	// spring boot dependency with jetty as application server
-    compile 'org.springframework.boot:spring-boot-starter-web'
-	compile 'org.springframework.boot:spring-boot-starter-jetty'
+
+	optional 'org.springframework.boot:spring-boot-configuration-processor:' + springBootVersion
+	provided "javax.servlet:javax.servlet-api:" + servletApiVersion
+	compile 'org.springframework:spring-webmvc:' + springWebMvc
+	compile 'org.springframework.boot:spring-boot-starter:' + springBootVersion
 
 	// spring testing
-	testCompile 'org.springframework.boot:spring-boot-starter-test'
-	
+	testCompile 'org.springframework.boot:spring-boot-starter-test:' + springBootVersion
+
 	// test library for testing spring with spock
-	testCompile 'org.spockframework:spock-spring'
-	
+	testCompile 'org.spockframework:spock-spring:1.0-groovy-2.4'
+
 	// groovy testing with spock
 	testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
 	testCompile 'cglib:cglib-nodep:3.1'
 	testCompile 'org.objenesis:objenesis:2.1'
 	testCompile 'org.codehaus.groovy:groovy-all:2.4.3'
-	
+
 	// mongodb testing database
 	testCompile group: "de.flapdoodle.embed", name: "de.flapdoodle.embed.mongo", version: "1.50.0"
 
 	// to use mocking of httpsession, security, etc.
-	testCompile 'org.springframework.security:spring-security-core'	
+	testCompile 'org.springframework.security:spring-security-core:' + springSecurityCore
+
+	// Hibernate Validator
+	testCompile 'org.hibernate:hibernate-validator:5.2.2.Final'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '2.6'
+//Configuration metadata generation
+compileJava.dependsOn(processResources)
+
+//turning off unacceptable Javadoc lint in JDK 8+ which prevents builds with "non-strict" HTML5 javadoc tags
+if (JavaVersion.current().isJava8Compatible()) {
+	allprojects {
+		tasks.withType(Javadoc) {
+			options.addStringOption('Xdoclint:none', '-quiet')
+		}
+	}
+}
+
+javadoc {
+	classpath = configurations.compile + configurations.provided
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
+	classifier = 'javadoc'
+	from 'build/docs/javadoc'
 }
 
 task sourcesJar(type: Jar) {
-    from sourceSets.main.allSource
-    classifier = 'sources'
+	from sourceSets.main.allSource
+	classifier = 'sources'
 }
+
+artifacts {
+	archives jar
+	archives javadocJar
+	archives sourcesJar
+}
+
+signing {
+	required { gradle.taskGraph.hasTask("uploadArchives") }
+	sign configurations.archives
+}
+
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '2.6'
+}
+
+
+
+
+//uploadArchives {
+//	repositories {
+//		mavenDeployer {
+//			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//			repository(url: 'https://api.bintray.com/maven/uniconiam/maven/cas-client-autoconfig-support') {
+//				authentication(userName: bintrayUsername, password: bintrayAPIKey)
+//			}
+//			pom.project {
+//				name 'CAS client autoconfig support'
+//				packaging 'jar'
+//				description 'Annotation-based configuration support for Apereo CAS Java clients'
+//				url 'https://github.com/Unicon/cas-client-autoconfig-support'
+//
+//				scm {
+//					url 'scm:git@github.com:Unicon/cas-client-autoconfig-support.git'
+//					connection 'scm:git@github.com:Unicon/cas-client-autoconfig-support.git'
+//					developerConnection 'scm:git@github.com:Unicon/cas-client-autoconfig-support.git'
+//				}
+//
+//				licenses {
+//					license {
+//						name 'The Apache Software License, Version 2.0'
+//						url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+//						distribution 'repo'
+//					}
+//				}
+//
+//				developers {
+//					developer {
+//						id 'dinolupo'
+//						name 'Dino Lupo'
+//					}
+//				}
+//			}
+//		}
+//	}
+//}

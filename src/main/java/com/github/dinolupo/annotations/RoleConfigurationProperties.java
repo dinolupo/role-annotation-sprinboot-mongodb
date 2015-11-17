@@ -1,8 +1,9 @@
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import javax.validation.constraints.NotNull;
 
-@ConfigurationProperties(prefix = "temotec.annotations.security", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "dinolupo.annotations.security", ignoreUnknownFields = false)
 public class RoleConfigurationProperties {
 	public String getCollection() {
 		return collection;
@@ -28,12 +29,12 @@ public class RoleConfigurationProperties {
 		this.rolePath = rolePath;
 	}
 
-
+	@NotNull
 	String collection;
 	
-
+	@NotNull
 	String usernamePath;
 	
-
+	@NotNull
 	String rolePath;
 }

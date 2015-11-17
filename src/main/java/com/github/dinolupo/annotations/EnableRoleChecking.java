@@ -1,4 +1,4 @@
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

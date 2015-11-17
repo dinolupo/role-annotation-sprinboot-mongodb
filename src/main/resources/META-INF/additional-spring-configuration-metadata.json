@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "dinolupo.annotations.security.collection",
+    "type": "java.lang.String",
+    "description": "Name of the MongoDB collection that contains the roles and username information"
+  },
+  {
+    "name": "dinolupo.annotations.security.role-path",
+    "type": "java.lang.String",
+    "description": "Path inside the collection that contains the roles array or the role value"
+  },
+  {
+    "name": "dinolupo.annotations.security.username-path",
+    "type": "java.lang.String",
+    "description": "Path inside the 'collection' that contains the username to match"
+  }
+]}

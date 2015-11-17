@@ -1,4 +1,4 @@
-package it.temotec.annotations
+package com.github.dinolupo.annotations
 
 import java.security.Principal
 import javax.servlet.http.HttpServletResponse

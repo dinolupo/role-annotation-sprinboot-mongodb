@@ -1,4 +1,4 @@
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
@@ -59,15 +59,12 @@ public class SecurityInterceptor extends HandlerInterceptorAdapter {
 			//System.out.printf("Access :%s\n", casRole.access());
 			String[] roles = casRole.value();
 			
-			System.out.println("Number of input role:" + roles.length);
-			
 			MongoDatabase db = mongoClient.getDatabase(mongoProperties.getDatabase());
 	        MongoCollection<Document> coll = db.getCollection(roleProperties.getCollection(), Document.class);
-			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), casRole.value()));
+			Bson filter = and(eq(roleProperties.getUsernamePath(), connectedUser), in(roleProperties.getRolePath(), roles));
 			
-			long found = coll.count(filter);
-			
-			System.out.printf("Found: %d\n", found);
+			long found = coll.count(filter);		
+			//System.out.printf("Found: %d\n", found);
 
 			if (0 == found) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

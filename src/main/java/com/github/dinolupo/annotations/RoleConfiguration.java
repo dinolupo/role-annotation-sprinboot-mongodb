@@ -1,26 +1,27 @@
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.util.Assert;
 
 @Configuration
 @ComponentScan
-@EnableConfigurationProperties(MongoAutoConfiguration.class)
+@Import(MongoAutoConfiguration.class)
 public class RoleConfiguration implements ImportAware  {
 
 
 	@Override
 	public void setImportMetadata(AnnotationMetadata importMetadata) {
 		AnnotationAttributes annotationAttributes = AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(EnableRoleChecking.class.getName()));
-		if (annotationAttributes == null) {
-			throw new IllegalArgumentException("@Role is not present on importing class " + importMetadata.getClassName());
-		}
+		Assert.notNull(annotationAttributes,
+				"No " + EnableRoleChecking.class.getSimpleName()
+						+ " annotation found on  '" + importMetadata.getClassName() + "'.");
 	}
 
 	@Bean

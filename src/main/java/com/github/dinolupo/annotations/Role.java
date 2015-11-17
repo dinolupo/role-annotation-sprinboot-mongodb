@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.temotec.annotations;
+package com.github.dinolupo.annotations;
 
 import java.lang.annotation.Target;
 
@@ -13,7 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 
 
 /**
- * @author dino lupo
+ * @author Dino Lupo
  *
  * Set this to verify if the current logged user has permissions to access this method
  *
