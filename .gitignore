@@ -8,6 +8,7 @@ db/
 .tern-project
 .idea/
 .gradle
+local/
 
 # Ignore Gradle GUI config
 gradle-app.setting

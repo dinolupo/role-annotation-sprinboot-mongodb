@@ -6,6 +6,9 @@ Roles configuration is read on MongoDB based on database, collection and path co
 
 > This project was developer as a tutorial on Annotations and is shown on the following article on my blog site [Dino Lupo Blog](http://dinolupo.github.io).
 
+## Current version
+`1.0.0`
+
 ## Usage
 
 * create a Jar with gradle jar:
@@ -19,7 +22,7 @@ import the library in your project:
   ```Groovy
   dependencies {
         ...
-  		compile name: 'temotec-annotations-0.1.SNAPSHOT'
+  		compile name: 'com.github.dinolupo:role-annotation-springboot-mongodb:1.0.0'
         ...
   }
   ```
@@ -27,11 +30,10 @@ import the library in your project:
 
   ```xml
   <dependency>
-    <groupId>sample</groupId>
-    <artifactId>com.sample</artifactId>
-    <version>1.0</version>
-    <scope>system</scope>
-    <systemPath>${project.basedir}/libs/temotec-annotations-0.1.SNAPSHOT.jar</systemPath>
+    <groupId>com.github.dinolupo</groupId>
+    <artifactId>role-annotation-springboot-mongodb</artifactId>
+    <version>1.0.0-RELEASE</version>
+    <scope>runtime</scope>
   </dependency>
   ```
   
@@ -48,7 +50,7 @@ spring:
       host: localhost
       port: 27017
 
-temotec:
+dinolupo:
   annotations:
     security:
       collection: User
@@ -60,7 +62,7 @@ temotec:
 * Autowire the SecurityInterceptor
 * Add the interceptor and configure the protected pattern if needed with regex urls
 
-> Complete root application code sample
+> Spring Boot root Application code sample
 
 ```java
 @SpringBootApplication
@@ -84,7 +86,21 @@ public class Application extends WebMvcConfigurerAdapter {
 }
 ```
 
-**SAMPLE** for using this **annotation**:
+> Spring Boot Controller and annotated method code sample
 
-	@Role({"read-user","write-user"})
+```java
+@Controller
+public class SampleController {
+}
+
     @Role("read-user")
+    public ResponseEntity<Object> readOnlyMethod(HttpServletRequest request, HttpServletResponse response) {
+    	// this method will be accessed only if the current logged in user Principal has the role "read-user"
+    }
+    
+    @Role({"read-user","write-user"})
+    public ResponseEntity<Object> getAllUsers(HttpServletRequest request, HttpServletResponse response) {
+    	// this method will be accessed only if the current logged in user Principal has one of the roles "read-user" and "write-user"
+    }
+}    
+```
