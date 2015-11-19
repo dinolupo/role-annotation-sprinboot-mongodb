@@ -183,7 +183,7 @@ uploadArchives {
 			//				authentication(userName: bintrayUsername, password: bintrayAPIKey)
 			//			}
 
-			repository(url: 'https://api.bintray.com/maven/dinolupo/maven') {
+			repository(url: 'https://api.bintray.com/maven/dinolupo/maven/role-annotation-springboot-mongodb') {
 				authentication(userName: bintrayUsername, password: bintrayAPIKey)
 			}
 
